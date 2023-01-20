@@ -150,7 +150,9 @@ function update() {
 
   // 총알의 y좌표 업데이트 하는 함수
   for (let i = 0; i < bulletList.length; i++) {
-    if (bulletList[i].alive) {
+    if (bulletList[i].y <= 0) {
+      bulletList[i].alive = false;
+    } else if (bulletList[i].alive) {
       bulletList[i].update();
       bulletList[i].checkHit();
     }
