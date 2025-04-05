@@ -8,9 +8,12 @@
  * - 적이 바닥에 닿으면 게임 오버
  */
 
+// 모바일 기기 감지
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
 // 게임 상수 정의
-let GAME_WIDTH = window.innerWidth > 500 ? 400 : window.innerWidth - 40;  // 모바일/데스크톱에 맞게 조정
-let GAME_HEIGHT = window.innerHeight > 800 ? 700 : window.innerHeight - 100;  // 모바일/데스크톱에 맞게 조정
+let GAME_WIDTH = isMobile ? window.innerWidth : (window.innerWidth > 500 ? 400 : window.innerWidth - 40);
+let GAME_HEIGHT = isMobile ? window.innerHeight : (window.innerHeight > 800 ? 700 : window.innerHeight - 100);
 const SPACESHIP_WIDTH = 64;  // 우주선 너비
 const SPACESHIP_HEIGHT = 64; // 우주선 높이
 const ENEMY_WIDTH = 40;      // 적 우주선 너비
@@ -68,24 +71,43 @@ document.body.appendChild(canvas);
 
 // 스타일 적용
 canvas.style.border = "none";
-canvas.style.borderRadius = "12px";
-canvas.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+canvas.style.borderRadius = isMobile ? "0" : "12px";
+canvas.style.boxShadow = isMobile ? "none" : "0 4px 6px rgba(0, 0, 0, 0.1)";
 canvas.style.display = "block";
-canvas.style.margin = "0 auto";
 canvas.style.backgroundColor = "#000";
-canvas.style.position = "fixed";
-canvas.style.top = "50%";
-canvas.style.left = "50%";
-canvas.style.transform = "translate(-50%, -50%)";
+
+if (isMobile) {
+    // 모바일 스타일
+    canvas.style.margin = "0";
+    canvas.style.position = "fixed";
+    canvas.style.top = "0";
+    canvas.style.left = "0";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.style.transform = "none";
+    canvas.style.borderRadius = "0";
+} else {
+    // 웹 스타일
+    canvas.style.margin = "0 auto";
+    canvas.style.position = "fixed";
+    canvas.style.top = "50%";
+    canvas.style.left = "50%";
+    canvas.style.transform = "translate(-50%, -50%)";
+    canvas.style.borderRadius = "12px";
+}
 
 // 전체 화면 스타일
 document.body.style.margin = "0";
 document.body.style.padding = "0";
-document.body.style.backgroundColor = "#f5f5f5";
+document.body.style.backgroundColor = isMobile ? "#000" : "#f5f5f5";
 document.body.style.height = "100vh";
-document.body.style.display = "flex";
-document.body.style.justifyContent = "center";
-document.body.style.alignItems = "center";
+document.body.style.width = "100vw";
+document.body.style.overflow = "hidden";
+if (!isMobile) {
+    document.body.style.display = "flex";
+    document.body.style.justifyContent = "center";
+    document.body.style.alignItems = "center";
+}
 document.body.style.fontFamily = "system-ui, -apple-system, sans-serif";
 
 /**
@@ -96,13 +118,10 @@ function resizeGame() {
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     
-    // 모바일 기기 감지
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
     if (isMobile) {
-        // 모바일: 화면 크기에 맞게 조정
-        GAME_WIDTH = Math.min(windowWidth - 20, 400); // 최대 400px, 여백 20px
-        GAME_HEIGHT = Math.min(windowHeight - 20, 700); // 최대 700px, 여백 20px
+        // 모바일: 화면 전체 크기 사용
+        GAME_WIDTH = windowWidth;
+        GAME_HEIGHT = windowHeight;
     } else {
         // 데스크톱: 기본 크기 유지
         GAME_WIDTH = 400;
@@ -129,32 +148,30 @@ function setupTouchControls() {
     let touchStartX = 0;
     let touchStartY = 0;
     let isMoving = false;
-    
-    // 모바일 기기 감지
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    let pauseButton = null;
     
     if (isMobile) {
         // 일시정지 버튼 생성
-        const pauseButton = document.createElement('button');
+        pauseButton = document.createElement('button');
         pauseButton.innerHTML = '⏸️';
-        pauseButton.style.position = 'absolute';
-        pauseButton.style.top = '10px';
-        pauseButton.style.right = '10px';
-        pauseButton.style.zIndex = '1000';
-        pauseButton.style.padding = '8px';
-        pauseButton.style.fontSize = '20px';
+        pauseButton.style.position = 'fixed';
+        pauseButton.style.top = '20px';
+        pauseButton.style.right = '20px';
+        pauseButton.style.zIndex = '9999';
+        pauseButton.style.padding = '15px';
+        pauseButton.style.fontSize = '28px';
         pauseButton.style.border = 'none';
         pauseButton.style.borderRadius = '50%';
-        pauseButton.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        pauseButton.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
         pauseButton.style.color = 'white';
         pauseButton.style.cursor = 'pointer';
-        pauseButton.style.width = '40px';
-        pauseButton.style.height = '40px';
-        pauseButton.style.display = 'flex';
+        pauseButton.style.width = '60px';
+        pauseButton.style.height = '60px';
+        pauseButton.style.display = 'none'; // 초기에는 숨김
         pauseButton.style.alignItems = 'center';
         pauseButton.style.justifyContent = 'center';
-        canvas.parentNode.style.position = 'relative';
-        canvas.parentNode.appendChild(pauseButton);
+        pauseButton.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.3)';
+        document.body.appendChild(pauseButton);
         
         pauseButton.addEventListener('click', () => {
             gameState.paused = !gameState.paused;
@@ -166,6 +183,23 @@ function setupTouchControls() {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         isMoving = false;
+
+        // 게임 시작 처리
+        if (!gameState.gameStarted) {
+            gameState.gameStarted = true;
+            if (pauseButton) pauseButton.style.display = 'flex'; // 게임 시작 시 버튼 표시
+        } else if (gameState.gameOver) {
+            gameState.highScore = Math.max(gameState.highScore, gameState.score);
+            gameState.gameOver = false;
+            gameState.score = 0;
+            gameState.level = 1;
+            gameState.levelScore = 0;
+            gameState.bullets = [];
+            gameState.enemies = [];
+            gameState.explosions = [];
+            gameState.lastBulletTime = 0;
+            if (pauseButton) pauseButton.style.display = 'flex'; // 게임 재시작 시 버튼 표시
+        }
     });
     
     canvas.addEventListener('touchmove', (e) => {
@@ -185,11 +219,11 @@ function setupTouchControls() {
     
     canvas.addEventListener('touchend', (e) => {
         e.preventDefault();
-        if (!isMoving) {
+        if (!isMoving && gameState.gameStarted && !gameState.gameOver && !gameState.paused) {
             // 터치 후 이동이 없었다면 총알 발사
             createBullet();
-    }
-  });
+        }
+    });
 }
 
 /**
@@ -560,7 +594,6 @@ function render() {
     ctx.fillText(`Next Level: ${LEVEL_SCORE_THRESHOLD - gameState.levelScore}`, 20, 120);
 
     // 데스크톱에서만 일시정지 방법 표시
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     if (!isMobile) {
         ctx.textAlign = "right";
         ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
