@@ -205,17 +205,19 @@ function setupTouchControls() {
     canvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
         const touchX = e.touches[0].clientX;
-        const deltaX = touchX - touchStartX;
+        const touchY = e.touches[0].clientY;
         
-        // 우주선 이동
-        gameState.spaceship.x += deltaX * 0.5;
+        // 캔버스의 위치를 고려하여 터치 좌표 계산
+        const rect = canvas.getBoundingClientRect();
+        const canvasX = touchX - rect.left;
+        const canvasY = touchY - rect.top;
+        
+        // 우주선 위치를 터치 위치로 직접 설정
+        gameState.spaceship.x = canvasX - SPACESHIP_WIDTH / 2;
         
         // 화면 경계 체크
         gameState.spaceship.x = Math.max(0, Math.min(GAME_WIDTH - SPACESHIP_WIDTH, gameState.spaceship.x));
         
-        touchStartX = touchX;
-        isMoving = true;
-
         // 터치 중일 때 총알 발사
         if (gameState.gameStarted && !gameState.gameOver && !gameState.paused) {
             createBullet();
