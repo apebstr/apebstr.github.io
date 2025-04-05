@@ -187,7 +187,7 @@ function setupTouchControls() {
         // 게임 시작 처리
         if (!gameState.gameStarted) {
             gameState.gameStarted = true;
-            if (pauseButton) pauseButton.style.display = 'flex'; // 게임 시작 시 버튼 표시
+            if (pauseButton) pauseButton.style.display = 'none'; // 게임 시작 시 버튼 숨김
         } else if (gameState.gameOver) {
             gameState.highScore = Math.max(gameState.highScore, gameState.score);
             gameState.gameOver = false;
@@ -198,7 +198,7 @@ function setupTouchControls() {
             gameState.enemies = [];
             gameState.explosions = [];
             gameState.lastBulletTime = 0;
-            if (pauseButton) pauseButton.style.display = 'flex'; // 게임 재시작 시 버튼 표시
+            if (pauseButton) pauseButton.style.display = 'none'; // 게임 재시작 시 버튼 숨김
         }
     });
     
@@ -215,13 +215,17 @@ function setupTouchControls() {
         
         touchStartX = touchX;
         isMoving = true;
+
+        // 터치 중일 때 총알 발사
+        if (gameState.gameStarted && !gameState.gameOver && !gameState.paused) {
+            createBullet();
+        }
     });
     
     canvas.addEventListener('touchend', (e) => {
         e.preventDefault();
-        if (!isMoving && gameState.gameStarted && !gameState.gameOver && !gameState.paused) {
-            // 터치 후 이동이 없었다면 총알 발사
-            createBullet();
+        if (gameState.gameStarted && !gameState.gameOver && !gameState.paused) {
+            if (pauseButton) pauseButton.style.display = 'flex'; // 게임 중일 때만 버튼 표시
         }
     });
 }
