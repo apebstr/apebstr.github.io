@@ -46,7 +46,7 @@ let gameState = {
     bulletCooldown: 300,     // 총알 발사 쿨다운 (ms)
     spaceship: {             // 우주선 위치
         x: GAME_WIDTH / 2 - SPACESHIP_WIDTH / 2,
-        y: GAME_HEIGHT - SPACESHIP_HEIGHT
+        y: GAME_HEIGHT - SPACESHIP_HEIGHT - 100  // 하단에서 100픽셀 위로 이동
     },
     bullets: [],             // 총알 배열
     enemies: [],             // 적 우주선 배열
@@ -138,7 +138,7 @@ function resizeGame() {
     
     // 게임 상태 초기화
     gameState.spaceship.x = GAME_WIDTH / 2 - SPACESHIP_WIDTH / 2;
-    gameState.spaceship.y = GAME_HEIGHT - SPACESHIP_HEIGHT;
+    gameState.spaceship.y = GAME_HEIGHT - SPACESHIP_HEIGHT - 100;
 }
 
 /**
@@ -413,8 +413,8 @@ function updateEnemies() {
     gameState.enemies = gameState.enemies.filter(enemy => {
         enemy.y += gameState.enemySpeed;
         
-        // 바닥에 닿았는지 체크
-        if (enemy.y >= GAME_HEIGHT - enemy.height) {
+        // 적이 캐릭터의 상단 높이에 도달했는지 체크
+        if (enemy.y + enemy.height >= gameState.spaceship.y) {
             gameState.gameOver = true;
             return false;
         }
